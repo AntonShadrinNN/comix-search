@@ -20,16 +20,11 @@ func (f Flags) validateFlags() error {
 	return nil
 }
 
-func ParseFlags() (Flags, error) {
+func ParseFlags() Flags {
 	var flags Flags
 
 	flag.StringVar(&flags.InitialString, initialStringFlagName, "", "Mandatory. String to stem")
 	flag.Parse()
 
-	err := flags.validateFlags()
-	if err != nil {
-		return Flags{}, err
-	}
-
-	return flags, nil
+	return flags
 }
