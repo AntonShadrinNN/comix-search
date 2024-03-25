@@ -23,7 +23,7 @@ jobs:
       run: go mod tidy
 
     - name: Build
-      run: go build ./...
+      run: go build -o main ./stem
 
     - name: Test
       run: go test -coverprofile cover.out ./... && go tool cover -html=cover.out -o cov.html
