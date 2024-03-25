@@ -32,7 +32,7 @@ func TestFlagsValidation(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.FlagsData.validateFlags()
+		err := testCase.FlagsData.ValidateFlags()
 		assert.Equal(t, testCase.Err, err)
 	}
 }
@@ -53,7 +53,7 @@ func TestGetCommandLineFlags(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := testCase.ExpectedFlags.validateFlags()
+		err := testCase.ExpectedFlags.ValidateFlags()
 		assert.Equal(t, testCase.Err, err)
 	}
 }

@@ -7,15 +7,18 @@ import (
 	"github.com/kljensen/snowball"
 )
 
+// A Stemmer reduces inflected words to their word stem
 type Stemmer interface {
 	Stem(words []string)
 }
 
+// A SnowballStemmer is a concrete implementation of Stemmer interface
 type SnowballStemmer struct {
-	language      Language
-	stopWordsFunc func() ([]string, error)
+	language      Language                 // Word's language
+	stopWordsFunc func() ([]string, error) // Function that returns stop words
 }
 
+// Stem returns whitspace-separated string with stemmed words and error if occured
 func (s SnowballStemmer) Stem(words []string) (string, error) {
 	stopWords, err := s.stopWordsFunc()
 	if err != nil {

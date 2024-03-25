@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
 
+// getStopWords returns most frequent english words
+// Currently data is taken from open bases
 func getStopWords() ([]string, error) {
 	resp, err := http.Get("https://gist.githubusercontent.com/rg089/35e00abf8941d72d419224cfd5b5925d/raw/12d899b70156fd0041fa9778d657330b024b959c/stopwords.txt")
 	if err != nil {
@@ -23,9 +25,9 @@ func getStopWords() ([]string, error) {
 func main() {
 	flags := ParseFlags()
 
-	err := flags.validateFlags()
+	err := flags.ValidateFlags()
 	if err != nil {
-		panic(err)
+		fmt.Printf("Failed to parse flags: %+v\n", err)
 	}
 
 	stemmer := SnowballStemmer{
@@ -34,7 +36,8 @@ func main() {
 	}
 	stemmed, err := stemmer.Stem(strings.Split(flags.InitialString, " "))
 	if err != nil {
-		panic(err)
+		fmt.Printf("Failed to stem provided string: %+v\n", err)
 	}
-	log.Printf(stemmed)
+
+	fmt.Println(stemmed)
 }
