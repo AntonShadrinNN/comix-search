@@ -5,7 +5,7 @@ name: Go
 
 on:
   pull_request:
-    branches: [ "main", "ashadrin/stem_cli_implementation" ]
+    branches: [ "main" ]
 
 jobs:
 
@@ -36,3 +36,13 @@ jobs:
           name: code-coverage-report
           path: cov.html
 
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+        
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
