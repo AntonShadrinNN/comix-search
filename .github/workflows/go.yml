@@ -5,7 +5,7 @@ name: Go
 
 on:
   pull_request:
-    branches: [ "main", "ashadrin/stem_cli_implementation" ]
+    branches: [ "main" ]
 
 jobs:
 
@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.pull_request.base.ref }}
+        ref: ${{ github.event.pull_request.head.ref }}
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
         
       - name: Lint
         uses: golangci/golangci-lint-action@v3
