@@ -5,7 +5,7 @@ name: Go
 
 on:
   pull_request:
-    branches: [ "main", "ashadrin/stem_cli_implementation" ]
+    branches: [ "main" ]
 
 jobs:
 
@@ -22,7 +22,7 @@ jobs:
         go-version: '1.22'
 
     - name: Install deps
-      run: ls -la && go mod tidy
+      run: go mod tidy
 
     - name: Build
       run: go build -o main ./stem
