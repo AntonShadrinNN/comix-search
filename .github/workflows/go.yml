@@ -25,11 +25,11 @@ jobs:
       run: go mod tidy
 
     - name: Build
-      run: go build -o main ./stem
+      run: go build -o main ./comix-collector-cli/cmd/xkcd/main.go
 
     - name: Test
       run: go test -coverprofile cover.out ./... && go tool cover -html=cover.out -o cov.html
-    
+
     - name: Archive artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -40,9 +40,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Install deps
+      run: go mod tidy
+
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-        
+
       - name: Lint
         uses: golangci/golangci-lint-action@v3
