@@ -16,7 +16,10 @@ type Config struct {
 // UnmarshalYAML overrides default behaviour of yaml unmarshaller and makes it possible
 // to set default values on fields
 func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	defaults.Set(c)
+	err := defaults.Set(c)
+	if err != nil {
+		return err
+	}
 	type defaultCfg Config
 	if err := unmarshal((*defaultCfg)(c)); err != nil {
 		return err
@@ -33,7 +36,10 @@ func NewConfig() (Config, error) {
 	}
 	var c Config
 	if len(yamlFile) == 0 {
-		defaults.Set(&c)
+		err = defaults.Set(&c)
+		if err != nil {
+			return Config{}, err
+		}
 		return c, nil
 	}
 	err = yaml.Unmarshal(yamlFile, &c)

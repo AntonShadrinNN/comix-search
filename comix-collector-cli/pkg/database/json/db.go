@@ -54,7 +54,10 @@ func (db JsonDb[K, E, V]) Create(key K, value V) error {
 	if err != nil {
 		return err
 	}
-	os.WriteFile(db.filePath, jsonData, 0600)
+	err = os.WriteFile(db.filePath, jsonData, 0600)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
