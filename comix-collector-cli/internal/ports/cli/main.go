@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/internal/app"
@@ -10,6 +11,26 @@ import (
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/pkg/xkcd"
 	"github.com/schollz/progressbar/v3"
 )
+
+func setupProgressBar(size int) *progressbar.ProgressBar {
+	bar := progressbar.NewOptions(size,
+		progressbar.OptionClearOnFinish(),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionFullWidth(),
+		progressbar.OptionOnCompletion(func() {
+			fmt.Fprint(os.Stdout, "\n")
+		}),
+		progressbar.OptionSetRenderBlankState(true),
+		progressbar.OptionSetDescription("[cyan] Updating database...[reset]"),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[white]❚[reset]",
+			SaucerHead:    "[red]❚[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}))
+	return bar
+}
 
 // fetch fetches comixes limit number of comixes in some number of threads
 func fetch(ctx context.Context, a app.AppRepo, limit int, threads int) error {
@@ -33,10 +54,7 @@ func fetch(ctx context.Context, a app.AppRepo, limit int, threads int) error {
 	wg := sync.WaitGroup{}
 	comixChan := make(chan int)
 	errChan := make(chan error)
-	bar := progressbar.Default(-1)
-	if n > lastComix {
-		bar = progressbar.Default(int64(n - lastComix))
-	}
+	bar := setupProgressBar(n - lastComix - 1)
 	for i := 0; i < threads; i++ {
 		wg.Add(1)
 		go func() {
