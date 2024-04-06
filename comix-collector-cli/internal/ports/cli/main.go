@@ -8,6 +8,7 @@ import (
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/internal/app"
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/internal/entities"
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/pkg/xkcd"
+	"github.com/schollz/progressbar/v3"
 )
 
 // fetch fetches comixes limit number of comixes in some number of threads
@@ -32,6 +33,10 @@ func fetch(ctx context.Context, a app.AppRepo, limit int, threads int) error {
 	wg := sync.WaitGroup{}
 	comixChan := make(chan int)
 	errChan := make(chan error)
+	bar := progressbar.Default(-1)
+	if n > lastComix {
+		bar = progressbar.Default(int64(n - lastComix))
+	}
 	for i := 0; i < threads; i++ {
 		wg.Add(1)
 		go func() {
@@ -68,8 +73,14 @@ func fetch(ctx context.Context, a app.AppRepo, limit int, threads int) error {
 					err = a.Create(comixID, comixData)
 					if err != nil {
 						errChan <- err
+						mux.Unlock()
+						continue
 					}
 					mux.Unlock()
+					err = bar.Add(1)
+					if err != nil {
+						errChan <- err
+					}
 				case <-ctx.Done():
 					return
 				}
