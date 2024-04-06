@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// buildGetRequest is a helper function to build request
 func buildGetRequest(ctx context.Context, url string) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,

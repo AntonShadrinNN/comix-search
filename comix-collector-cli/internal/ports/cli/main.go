@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/internal/app"
@@ -11,8 +10,10 @@ import (
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/pkg/xkcd"
 )
 
-func fetch(ctx context.Context, a app.App, limit int, threads int) error {
+// fetch fetches comixes limit number of comixes in some number of threads
+func fetch(ctx context.Context, a app.AppRepo, limit int, threads int) error {
 	var n int
+	// Unlimited
 	if limit != -1 {
 		n = limit
 	} else {
@@ -22,6 +23,7 @@ func fetch(ctx context.Context, a app.App, limit int, threads int) error {
 			return err
 		}
 	}
+	// Continue from last saved comic
 	lastComix, err := a.GetLastWrittenId()
 	if err != nil {
 		return err
@@ -37,6 +39,7 @@ func fetch(ctx context.Context, a app.App, limit int, threads int) error {
 			for {
 				select {
 				case comixID, ok := <-comixChan:
+					// channel is closed
 					if !ok {
 						return
 					}
@@ -49,7 +52,7 @@ func fetch(ctx context.Context, a app.App, limit int, threads int) error {
 						errChan <- err
 						continue
 					}
-
+					// Stem keywords
 					keywords, err := a.Stem(comix.Transcript + comix.Alt)
 					if err != nil {
 						errChan <- err
@@ -60,6 +63,7 @@ func fetch(ctx context.Context, a app.App, limit int, threads int) error {
 						Url:      comix.ImgUrl,
 						Keywords: keywords,
 					}
+					// Save to database
 					mux.Lock()
 					err = a.Create(comixID, comixData)
 					if err != nil {
@@ -82,14 +86,16 @@ func fetch(ctx context.Context, a app.App, limit int, threads int) error {
 		close(errChan)
 	}()
 
+	// Wait for errors
 	for err := range errChan {
-		log.Println(err)
+		return err
 	}
 
 	return nil
 }
 
-func fetchWithOut(ctx context.Context, a app.App, limit int, threads int) error {
+// fetchWithOut is the same as fetch, but also prints output to console
+func fetchWithOut(ctx context.Context, a app.AppRepo, limit int, threads int) error {
 	err := fetch(ctx, a, limit, threads)
 	if err != nil {
 		return err
@@ -107,14 +113,19 @@ func fetchWithOut(ctx context.Context, a app.App, limit int, threads int) error 
 	return nil
 }
 
+// Pretty-print list
 func printList(comixes []entities.ComixEntry) {
 	for _, comix := range comixes {
 		fmt.Println(comix)
 	}
 }
 
-func Run(ctx context.Context, a app.App) error {
-	f := ParseFlags()
+// Run runs cli
+func Run(ctx context.Context, a app.AppRepo) error {
+	f, err := ParseFlags()
+	if err != nil {
+		return err
+	}
 	if f.Output {
 		return fetchWithOut(ctx, a, f.Limit, f.Threads)
 	} else {

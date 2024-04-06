@@ -12,10 +12,15 @@ import (
 	"golang.org/x/exp/maps"
 )
 
+// JsonDb represents json database
 type JsonDb[K cmp.Ordered, E any, V any] struct {
-	filePath string
+	filePath string // Path to json file
 }
 
+// NewDb creates database if it not exists
+// K is key for json
+// V is value for json
+// E is entry - {K: V}
 func NewDb[K cmp.Ordered, E any, V any](filePath string) (JsonDb[K, V, E], error) {
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		f, err := os.Create(filePath)
@@ -30,6 +35,7 @@ func NewDb[K cmp.Ordered, E any, V any](filePath string) (JsonDb[K, V, E], error
 	}, nil
 }
 
+// Create creates new json entry and returns error if occured
 func (db JsonDb[K, E, V]) Create(key K, value V) error {
 	data, err := os.ReadFile(db.filePath)
 	if err != nil {
@@ -53,6 +59,7 @@ func (db JsonDb[K, E, V]) Create(key K, value V) error {
 	return nil
 }
 
+// GetLastWrittenId returns last written object id
 func (db JsonDb[K, E, V]) GetLastWrittenId() (K, error) {
 	m, err := db.ReadAll()
 	if err == io.EOF {
@@ -65,6 +72,7 @@ func (db JsonDb[K, E, V]) GetLastWrittenId() (K, error) {
 	return slices.Max(keys), nil
 }
 
+// ReadAll returns all data like map
 func (db JsonDb[K, E, V]) ReadAll() (map[K]V, error) {
 	file, err := os.OpenFile(db.filePath, os.O_RDONLY, 0600)
 	if err != nil {
@@ -81,6 +89,8 @@ func (db JsonDb[K, E, V]) ReadAll() (map[K]V, error) {
 	}
 	return m, nil
 }
+
+// Read returns value associated with key
 func (db JsonDb[K, E, V]) Read(key K) (V, error) {
 	m, err := db.ReadAll()
 	if err != nil {
@@ -93,6 +103,7 @@ func (db JsonDb[K, E, V]) Read(key K) (V, error) {
 	return *new(V), fmt.Errorf("Not found")
 }
 
+// GetWrittenCount returns amount of entries in database
 func (db JsonDb[K, E, V]) GetWrittenCount() (int, error) {
 	m, err := db.ReadAll()
 	if err != nil {

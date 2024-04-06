@@ -7,29 +7,35 @@ import (
 	"github.com/AntonShadrinNN/comix-search/comix-collector-cli/pkg/database/json"
 )
 
-type Db struct {
+// JsonDb is a wrapper over json.JsonDb to interract with domain entities
+type JsonDb struct {
 	jsondb json.JsonDb[int, entities.ComixEntry, entities.ComixData]
 }
 
-func New(filepath string) (Db, error) {
+// New creates new JsonDb
+func New(filepath string) (JsonDb, error) {
 	db, err := json.NewDb[int, entities.ComixData, entities.ComixEntry](filepath)
 	if err != nil {
-		return Db{}, err
+		return JsonDb{}, err
 	}
-	return Db{
+	return JsonDb{
 		jsondb: db,
 	}, nil
 }
 
-func (db Db) Create(id int, cd entities.ComixData) error {
+// Create creates new entry in a database
+func (db JsonDb) Create(id int, cd entities.ComixData) error {
 	return db.jsondb.Create(id, cd)
 }
 
-func (db Db) Read(id int) (entities.ComixData, error) {
+// Read reads entry from database
+func (db JsonDb) Read(id int) (entities.ComixData, error) {
 	return db.jsondb.Read(id)
 }
 
-func (db Db) ReadN(n int) ([]entities.ComixEntry, error) {
+// ReadN returns first n entries from database.
+// If n is greater than number of entries, then n entries will be returned
+func (db JsonDb) ReadN(n int) ([]entities.ComixEntry, error) {
 	res, err := db.ReadAll()
 	if err != nil {
 		return nil, err
@@ -37,7 +43,8 @@ func (db Db) ReadN(n int) ([]entities.ComixEntry, error) {
 	return res[:min(n, len(res))], nil
 }
 
-func (db Db) ReadAll() ([]entities.ComixEntry, error) {
+// ReadAll reads all entries from database and sorts it by id
+func (db JsonDb) ReadAll() ([]entities.ComixEntry, error) {
 	m, err := db.jsondb.ReadAll()
 	if err != nil {
 		return nil, err
@@ -56,12 +63,12 @@ func (db Db) ReadAll() ([]entities.ComixEntry, error) {
 	return res, nil
 }
 
-func (db Db) GetLastWrittenId() (int, error) {
-	res, err := db.jsondb.GetLastWrittenId()
-	return res, err
+// GetLastWrittenId returns last id written in database
+func (db JsonDb) GetLastWrittenId() (int, error) {
+	return db.jsondb.GetLastWrittenId()
 }
 
-func (db Db) GetWrittenCount() (int, error) {
-	res, err := db.jsondb.GetLastWrittenId()
-	return res, err
+// GetWrittenCount return number of comixes written to database
+func (db JsonDb) GetWrittenCount() (int, error) {
+	return db.jsondb.GetLastWrittenId()
 }

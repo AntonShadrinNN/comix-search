@@ -1,3 +1,22 @@
+/*
+xkcdparse parses xkcd.com and saves data to storage with stemmed output.
+It is also possible to display fetched data on a screen.
+
+Usage:
+
+	xkcdparse [flags]
+
+The flags are:
+
+	-o
+	    Print fetched data on a screen.
+	-n
+		Limit to print, e.g. -n 10 means to print only 10 first comixes.
+		Setting this parameter to -1 is equal to not use this flag.
+		Must be combined with -o, otherwise has no effect
+	-t
+		Number of threads to parse with. Default to 1.
+*/
 package main
 
 import (
@@ -31,24 +50,32 @@ func getStopWords() ([]string, error) {
 }
 
 func main() {
+	// Parse yaml config or set default values
 	cfg, err := config.NewConfig()
 	if err != nil {
 		panic(err)
 	}
 
+	// Initialize database connection. If already exists, it wouldn't be recreated
 	db, err := jsondb.New(cfg.DbFile)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx := context.Background()
+	// Initialize ComixDataRepository
 	cr := repo.New(db)
 
+	// Initialize stemmer
 	stemmer := words.NewSnowballStemmer(words.English, getStopWords)
 
+	ctx := context.Background()
+	// Initialize client to parse xkcd
 	client := xkcd.NewClient(ctx, cfg.Url)
+
+	// Build app object
 	app := app.NewApp(cr, stemmer, client)
 
+	// Run cli
 	err = cli.Run(ctx, app)
 	if err != nil {
 		panic(err)
